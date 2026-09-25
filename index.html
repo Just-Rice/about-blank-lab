@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About:Blank Lab</title>
+<meta name="description" content="A hands-on explainer for about:blank tabs, with a launcher to open any link inside one.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='5' y='3' width='22' height='26' rx='3' fill='white' stroke='%236b7cff' stroke-width='2.5'/></svg>">
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --surface-2: #eef0f7;
+    --text: #1b1e2b;
+    --muted: #5d6275;
+    --border: #dcdfea;
+    --accent: #4f5fe8;
+    --accent-ink: #ffffff;
+    --good: #1c8a4c;
+    --bad: #c23a3a;
+    --warn: #a86a00;
+    --code-bg: #eef0f7;
+    --shadow: 0 1px 2px rgba(20, 24, 40, .06), 0 4px 16px rgba(20, 24, 40, .06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11131a;
+      --surface: #191c26;
+      --surface-2: #222634;
+      --text: #e7e9f2;
+      --muted: #9aa0b6;
+      --border: #2e3345;
+      --accent: #8391ff;
+      --accent-ink: #0e1020;
+      --good: #53c98a;
+      --bad: #f07b7b;
+      --warn: #e2ad4f;
+      --code-bg: #232737;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11131a;
+    --surface: #191c26;
+    --surface-2: #222634;
+    --text: #e7e9f2;
+    --muted: #9aa0b6;
+    --border: #2e3345;
+    --accent: #8391ff;
+    --accent-ink: #0e1020;
+    --good: #53c98a;
+    --bad: #f07b7b;
+    --warn: #e2ad4f;
+    --code-bg: #232737;
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 32px 16px 80px; }
+  header h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.15; margin: 0 0 8px; letter-spacing: -.01em; }
+  header p { color: var(--muted); margin: 0; font-size: 1.05rem; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; }
+  h3 { font-size: 1.05rem; margin: 22px 0 6px; }
+  p, li { max-width: 70ch; }
+  a { color: var(--accent); }
+  code {
+    font: .9em ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--code-bg);
+    padding: .1em .35em;
+    border-radius: 4px;
+    overflow-wrap: anywhere;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .muted { color: var(--muted); }
+  .small { font-size: .9rem; }
+
+  /* ---------- Launcher ---------- */
+  .launcher { margin-top: 28px; }
+  .launcher label.big { display: block; font-weight: 600; margin-bottom: 8px; }
+  .url-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  input[type="text"], input[type="url"] {
+    flex: 1 1 260px;
+    min-width: 0;
+    font: inherit;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  input:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button {
+    font: inherit;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    padding: 10px 14px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; align-items: center; }
+  .chip {
+    font-size: .85rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .chip .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .dot.ok { background: var(--good); }
+  .dot.no { background: var(--bad); }
+
+  .modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-top: 18px; }
+  .mode {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    background: var(--bg);
+  }
+  .mode:has(input:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .mode input { margin: 0 6px 0 0; accent-color: var(--accent); }
+  .mode b { font-size: .95rem; }
+  .mode span { display: block; color: var(--muted); font-size: .85rem; margin-top: 2px; }
+
+  .options { display: flex; flex-wrap: wrap; gap: 14px 22px; margin-top: 16px; align-items: center; }
+  .options label { display: flex; align-items: center; gap: 8px; font-size: .95rem; }
+  .options input[type="text"] { flex: 0 1 200px; padding: 6px 10px; }
+  .options input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
+
+  .status { margin-top: 14px; min-height: 1.5em; font-size: .95rem; }
+  .status.ok { color: var(--good); }
+  .status.bad { color: var(--bad); }
+  .status.warn { color: var(--warn); }
+
+  .recent { margin-top: 16px; }
+  .recent ul { list-style: none; padding: 0; margin: 6px 0 0; display: flex; flex-direction: column; gap: 4px; }
+  .recent li { display: flex; gap: 8px; align-items: center; max-width: none; }
+  .recent li button.link {
+    background: none; border: none; padding: 2px 0; color: var(--accent); text-align: left;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0;
+  }
+  .recent li button.x { padding: 0 8px; font-size: .8rem; }
+
+  /* ---------- Diagram ---------- */
+  .diagram { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; margin: 18px 0 8px; }
+  .box {
+    flex: 1 1 180px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 12px;
+    font-size: .9rem;
+  }
+  .box .bar {
+    font: .8rem ui-monospace, Menlo, monospace;
+    background: var(--surface-2);
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin-bottom: 8px;
+    overflow-wrap: anywhere;
+  }
+  .box.nested { border-style: dashed; border-color: var(--accent); }
+  .arrow { align-self: center; color: var(--muted); font-size: 1.3rem; }
+  @media (max-width: 620px) { .arrow { transform: rotate(90deg); width: 100%; text-align: center; } }
+
+  /* ---------- Truth table ---------- */
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--border); }
+  th { font-size: .85rem; color: var(--muted); font-weight: 600; }
+  td:first-child { font-weight: 600; width: 32%; }
+  .yes { color: var(--good); font-weight: 600; }
+  .no { color: var(--bad); font-weight: 600; }
+  .meh { color: var(--warn); font-weight: 600; }
+  .table-scroll { overflow-x: auto; }
+
+  /* ---------- Inspector ---------- */
+  .inspect-out {
+    margin-top: 12px;
+    font: .85rem/1.5 ui-monospace, Menlo, monospace;
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 12px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    display: none;
+  }
+  .inspect-out.show { display: block; }
+
+  details { border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; background: var(--surface); margin-top: 10px; }
+  details summary { cursor: pointer; font-weight: 600; }
+  details[open] summary { margin-bottom: 6px; }
+  pre.code {
+    font: .85rem/1.5 ui-monospace, Menlo, monospace;
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 12px;
+    overflow-x: auto;
+  }
+
+  .theme-toggle { position: fixed; top: 12px; right: 12px; padding: 6px 10px; font-size: .85rem; }
+  footer { margin-top: 56px; color: var(--muted); font-size: .85rem; }
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch light or dark theme">◐ Theme</button>
+
+<div class="wrap">
+  <header>
+    <h1>About:Blank Lab</h1>
+    <p>What an <code>about:blank</code> tab really is, why a website can fill one with another site, and a launcher to try it yourself.</p>
+  </header>
+
+  <!-- ================= LAUNCHER ================= -->
+  <section class="card launcher" aria-labelledby="launch-h">
+    <label class="big" id="launch-h" for="url">Put in a link</label>
+    <form class="url-row" id="launchForm" autocomplete="off">
+      <input type="text" id="url" inputmode="url" placeholder="example.com or https://…" spellcheck="false">
+      <button class="primary" type="submit">Launch</button>
+    </form>
+
+    <div class="presets" aria-label="Sample sites">
+      <span class="muted small">Try:</span>
+      <button class="chip" type="button" data-url="https://example.com"><span class="dot ok"></span>example.com</button>
+      <button class="chip" type="button" data-url="https://en.wikipedia.org/wiki/About_URI_scheme"><span class="dot ok"></span>Wikipedia</button>
+      <button class="chip" type="button" data-url="https://www.google.com"><span class="dot no"></span>google.com</button>
+      <button class="chip" type="button" data-url="https://github.com"><span class="dot no"></span>github.com</button>
+    </div>
+    <p class="muted small" style="margin:6px 0 0">Green sites let other pages show them inside a frame. Red ones refuse, so you can see what a refusal looks like.</p>
+
+    <fieldset style="border:0;padding:0;margin:0">
+      <legend class="sr-only" style="position:absolute;left:-9999px">How to open it</legend>
+      <div class="modes">
+        <label class="mode">
+          <input type="radio" name="mode" value="blank" checked><b>about:blank + frame</b>
+          <span>The classic trick. Opens an empty tab, then places the site inside it.</span>
+        </label>
+        <label class="mode">
+          <input type="radio" name="mode" value="blob"><b>blob: page + frame</b>
+          <span>Same idea, but the tab gets a made-up <code>blob:</code> address instead.</span>
+        </label>
+        <label class="mode">
+          <input type="radio" name="mode" value="normal"><b>Normal new tab</b>
+          <span>Opens the site the ordinary way, for comparison.</span>
+        </label>
+      </div>
+    </fieldset>
+
+    <div class="options">
+      <label>Tab title <input type="text" id="tabTitle" placeholder="(leave empty for none)"></label>
+      <label><input type="checkbox" id="helperBar" checked> Show a small helper bar in the new tab</label>
+    </div>
+
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+
+    <div class="recent" id="recentWrap" hidden>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b class="small">Recent links <span class="muted">(saved only in this browser)</span></b>
+        <button type="button" class="small" id="clearRecent" style="padding:4px 10px">Clear</button>
+      </div>
+      <ul id="recentList"></ul>
+    </div>
+  </section>
+
+  <!-- ================= EXPLAINER ================= -->
+  <h2>What is about:blank?</h2>
+  <p>
+    Most addresses you type, like <code>https://wikipedia.org</code>, tell the browser to go fetch a page from a computer on the internet.
+    Addresses that start with <code>about:</code> are different: they are pages <b>built into the browser itself</b>. Nothing is downloaded.
+  </p>
+  <p>
+    <code>about:blank</code> is the simplest one: a completely empty white page. Browsers use it all the time behind the scenes, for example as the
+    placeholder a new tab or pop-up shows for a split second before its real page arrives.
+  </p>
+
+  <h2>How the trick works</h2>
+  <p>
+    Here is the key idea. When a website opens a new blank tab, that blank tab <b>counts as belonging to the website that opened it</b>.
+    Browsers treat an empty page as a "child" of whoever created it, so the parent is allowed to reach in and write whatever it wants into it.
+    (The technical name for this is that <code>about:blank</code> <i>inherits the origin</i> of its opener; "origin" just means "which website a page belongs to".)
+  </p>
+  <p>So the launcher above does three things:</p>
+  <ol>
+    <li>Opens a new tab at <code>about:blank</code>. The address bar says <code>about:blank</code> and will keep saying it.</li>
+    <li>Reaches into that empty tab and adds a <b>frame</b>, which is a window-within-a-page, stretched to fill the whole tab.</li>
+    <li>Points the frame at the link you gave. The real site loads inside the frame.</li>
+  </ol>
+  <p>The address bar only ever describes the outer page, not frames inside it, so it keeps showing <code>about:blank</code> while you use the real site.</p>
+
+  <div class="diagram" aria-label="Diagram: this page opens a blank tab, which holds a frame showing the real site">
+    <div class="box">
+      <div class="bar">just-rice.github.io/about-blank-lab</div>
+      <b>This page</b><br><span class="muted">You click Launch. It opens a tab and writes into it.</span>
+    </div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="box">
+      <div class="bar">about:blank</div>
+      <b>The blank tab</b><br><span class="muted">Belongs to this page, so this page can fill it.</span>
+      <div class="box nested" style="margin-top:10px">
+        <div class="bar">frame → example.com</div>
+        <b>The real site</b><br><span class="muted">Loads inside a full-size frame.</span>
+      </div>
+    </div>
+  </div>
+
+  <details>
+    <summary>Show me the actual code</summary>
+    <p class="small muted">This is the heart of the launcher, trimmed down. It has to run from a click, or the browser's pop-up blocker stops it.</p>
+<pre class="code">// 1. Open an empty tab. We get back a handle to it.
+const tab = window.open("about:blank", "_blank");
+
+// 2. Because the blank tab belongs to us, we can write into it.
+const frame = tab.document.createElement("iframe");
+frame.style.cssText = "position:fixed; inset:0; width:100%; height:100%; border:0";
+
+// 3. Point the frame at the real site.
+frame.src = "https://example.com";
+tab.document.body.style.margin = "0";
+tab.document.body.appendChild(frame);</pre>
+  </details>
+
+  <h2>What it hides, and what it doesn't</h2>
+  <p>This is where people often get the wrong idea. The trick changes what the <b>browser window shows</b>. It does not change what actually travels over the internet.</p>
+  <div class="card table-scroll">
+    <table>
+      <thead><tr><th>Thing</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td>Address bar</td><td><span class="yes">Hidden.</span> It shows <code>about:blank</code> the whole time.</td></tr>
+        <tr><td>Tab title</td><td><span class="yes">Up to you.</span> The blank tab has no title unless this page gives it one (the "Tab title" box above).</td></tr>
+        <tr><td>Browser history</td><td><span class="meh">Mostly hidden.</span> The blank tab isn't saved as a visit, and pages loaded inside frames usually aren't listed in history the normal way. Browsers differ on the details, so treat this as "less visible", not "invisible".</td></tr>
+        <tr><td>The network (Wi-Fi owner, school or work filters, internet provider)</td><td><span class="no">Not hidden at all.</span> Your computer still connects to the real site directly, exactly as if you'd typed its address. Anything watching the network sees the same thing either way, and a network filter that blocks a site blocks it inside the frame too.</td></tr>
+        <tr><td>Browser extensions and managed devices</td><td><span class="no">Not hidden.</span> Extensions and device-management software can see every page and frame the browser loads.</td></tr>
+        <tr><td>The website itself</td><td><span class="no">Not hidden.</span> It sees your visit normally, and it can tell that it's been put inside a frame.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Why some sites stay blank</h2>
+  <p>
+    Try the red <b>google.com</b> or <b>github.com</b> buttons. The tab opens but the frame shows an error like "refused to connect", or just stays empty.
+    That's on purpose: those sites send a short note with every page saying <b>"don't show me inside anyone else's frame."</b>
+    The note is called <code>X-Frame-Options</code> (or, in its newer form, <code>frame-ancestors</code>), and the browser obeys it.
+  </p>
+  <p>
+    Sites do this to prevent a scam called <b>clickjacking</b>: a bad page shows a real site inside an invisible frame and tricks you into clicking its buttons
+    (like "delete account") while you think you're clicking something harmless. Banks, email, search engines and social networks almost always refuse framing.
+    Simpler sites like Wikipedia and example.com generally allow it.
+  </p>
+  <p>
+    There is no way around this from inside a web page. The launcher also can't tell in advance whether a site will refuse, because browsers deliberately don't let one website
+    read another website's replies. The helper bar in the new tab has an <b>Open normally</b> button for exactly this case.
+  </p>
+
+  <h2>Other quirks you'll notice</h2>
+  <h3>Reloading wipes it</h3>
+  <p>
+    Press reload in the blank tab and it goes completely empty. There's nothing to reload: the address really is just <code>about:blank</code>,
+    and everything you saw was written in by this page, which doesn't happen a second time.
+  </p>
+  <h3>You may look logged out</h3>
+  <p>
+    Many sites keep you logged in with <b>cookies</b> (small notes the site stores in your browser). Browsers now limit cookies for sites shown inside
+    another site's frame, as a privacy protection against tracking. So a site you're logged into normally may treat you as a stranger inside the frame.
+  </p>
+  <h3>It needs a real click</h3>
+  <p>
+    Pop-up blockers only allow new tabs that come straight from you clicking something. That's why the launcher can't open tabs automatically,
+    and if your browser still blocks it, you'll see a message and can allow pop-ups for this page.
+  </p>
+  <h3>The blob: version</h3>
+  <p>
+    The <b>blob: page + frame</b> option builds the same wrapper page as a temporary file that lives only in your browser's memory, then opens it.
+    Its address looks like <code>blob:https://just-rice.github.io/3f2a…</code>. Unlike <code>about:blank</code>, that address mentions this site, and
+    reloading the tab works as long as this page is still open. It's a useful comparison for seeing what the address bar does and doesn't reveal.
+  </p>
+
+  <h2>Experiment: look inside a blank tab</h2>
+  <p>
+    This button opens an empty <code>about:blank</code> tab, then reads some facts about it from here and prints them below (and inside the new tab).
+    It shows the "belongs to its opener" rule in action.
+  </p>
+  <div class="card">
+    <button type="button" class="primary" id="inspectBtn">Open and inspect a blank tab</button>
+    <div class="inspect-out" id="inspectOut" aria-live="polite"></div>
+  </div>
+
+  <footer>
+    Made for personal experimenting. Everything runs in your browser; this page has no server and sends your links nowhere. Recent links are kept only in this browser's local storage.
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var statusEl = $("status");
+  var RECENT_KEY = "aboutBlankLab.recent";
+
+  // ---------- theme ----------
+  function readPref(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function writePref(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  var savedTheme = readPref("aboutBlankLab.theme");
+  if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+  $("themeToggle").addEventListener("click", function () {
+    var root = document.documentElement;
+    var current = root.getAttribute("data-theme") ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    var next = current === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    writePref("aboutBlankLab.theme", next);
+  });
+
+  // ---------- helpers ----------
+  function setStatus(msg, kind) {
+    statusEl.textContent = msg;
+    statusEl.className = "status" + (kind ? " " + kind : "");
+  }
+
+  // Turn whatever was typed into a full web address, or null if it isn't one.
+  function normalizeUrl(raw) {
+    raw = (raw || "").trim();
+    if (!raw) return null;
+    if (!/^[a-z][a-z0-9+.\-]*:/i.test(raw)) raw = "https://" + raw;
+    var u;
+    try { u = new URL(raw); } catch (e) { return null; }
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    if (!u.hostname || u.hostname.indexOf(".") === -1 && u.hostname !== "localhost") return null;
+    return u.href;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  // The HTML that goes inside the blank tab: a full-size frame plus an optional helper bar.
+  function wrapperHtml(url, title, showBar) {
+    var safeUrl = escapeHtml(url);
+    var bar = showBar ?
+      '<div id="abl-bar" style="position:fixed;top:8px;right:8px;z-index:2;display:flex;gap:6px;align-items:center;' +
+        'font:12px/1.2 system-ui,sans-serif;background:rgba(20,22,32,.88);color:#fff;padding:6px 8px;border-radius:8px;' +
+        'box-shadow:0 2px 10px rgba(0,0,0,.25);max-width:calc(100vw - 16px)">' +
+        '<span style="opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40vw" title="' + safeUrl + '">' + safeUrl + '</span>' +
+        '<a href="' + safeUrl + '" target="_blank" rel="noopener" style="color:#9fb0ff;white-space:nowrap">Open normally</a>' +
+        '<button type="button" onclick="document.getElementById(\'abl-bar\').remove()" ' +
+          'style="all:unset;cursor:pointer;padding:0 4px;opacity:.8" aria-label="Hide this bar">✕</button>' +
+      '</div>' : "";
+    return '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+      '<title>' + escapeHtml(title) + '</title>' +
+      '<style>html,body{margin:0;height:100%;overflow:hidden;background:#fff}' +
+      'iframe{position:fixed;inset:0;width:100%;height:100%;border:0}</style></head><body>' +
+      '<iframe src="' + safeUrl + '" allow="fullscreen; autoplay; clipboard-write; picture-in-picture" ' +
+        'referrerpolicy="no-referrer"></iframe>' + bar +
+      '</body></html>';
+  }
+
+  // ---------- recent links ----------
+  function loadRecent() {
+    try { var v = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); return Array.isArray(v) ? v : []; }
+    catch (e) { return []; }
+  }
+  function saveRecent(list) { try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch (e) {} }
+  function addRecent(url) {
+    var list = loadRecent().filter(function (u) { return u !== url; });
+    list.unshift(url);
+    saveRecent(list.slice(0, 8));
+    renderRecent();
+  }
+  function renderRecent() {
+    var list = loadRecent();
+    $("recentWrap").hidden = list.length === 0;
+    var ul = $("recentList");
+    ul.textContent = "";
+    list.forEach(function (url) {
+      var li = document.createElement("li");
+      var go = document.createElement("button");
+      go.type = "button"; go.className = "link"; go.textContent = url; go.title = "Launch " + url;
+      go.addEventListener("click", function () { $("url").value = url; launch(url); });
+      var x = document.createElement("button");
+      x.type = "button"; x.className = "x"; x.textContent = "✕"; x.setAttribute("aria-label", "Remove " + url);
+      x.addEventListener("click", function () {
+        saveRecent(loadRecent().filter(function (u) { return u !== url; }));
+        renderRecent();
+      });
+      li.appendChild(go); li.appendChild(x); ul.appendChild(li);
+    });
+  }
+  $("clearRecent").addEventListener("click", function () { saveRecent([]); renderRecent(); });
+
+  // ---------- launching ----------
+  function currentMode() {
+    var checked = document.querySelector('input[name="mode"]:checked');
+    return checked ? checked.value : "blank";
+  }
+
+  function launch(url) {
+    var mode = currentMode();
+    var title = $("tabTitle").value;
+    var showBar = $("helperBar").checked;
+
+    if (mode === "normal") {
+      // noopener: the new tab gets no link back to this page, which is the safe default.
+      window.open(url, "_blank", "noopener");
+      setStatus("Opened normally. Look at its address bar and compare.", "ok");
+      addRecent(url);
+      return;
+    }
+
+    if (mode === "blob") {
+      var blob = new Blob([wrapperHtml(url, title, showBar)], { type: "text/html" });
+      var blobUrl = URL.createObjectURL(blob);
+      var bt = window.open(blobUrl, "_blank");
+      if (!bt) { URL.revokeObjectURL(blobUrl); popupBlocked(); return; }
+      // Keep the blob alive while this page is open so reloading that tab still works.
+      setStatus("Opened as a blob: page. Its address bar shows a blob: link that mentions this site.", "ok");
+      addRecent(url);
+      return;
+    }
+
+    var tab = window.open("about:blank", "_blank");
+    if (!tab) { popupBlocked(); return; }
+    try {
+      tab.document.open();
+      tab.document.write(wrapperHtml(url, title, showBar));
+      tab.document.close();
+    } catch (e) {
+      setStatus("The tab opened, but this page couldn't write into it (" + e.message + ").", "bad");
+      return;
+    }
+    setStatus("Launched in an about:blank tab. If it stays blank, that site refuses to be framed; use “Open normally” there.", "ok");
+    addRecent(url);
+  }
+
+  function popupBlocked() {
+    setStatus("Your browser blocked the new tab. Allow pop-ups for this page (usually an icon at the right of the address bar), then try again.", "bad");
+  }
+
+  $("launchForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var url = normalizeUrl($("url").value);
+    if (!url) { setStatus("That doesn't look like a web address. Try something like example.com", "warn"); $("url").focus(); return; }
+    $("url").value = url;
+    launch(url);
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".presets .chip"), function (btn) {
+    btn.addEventListener("click", function () {
+      var url = btn.getAttribute("data-url");
+      $("url").value = url;
+      launch(url);
+    });
+  });
+
+  // ---------- inspector experiment ----------
+  $("inspectBtn").addEventListener("click", function () {
+    var out = $("inspectOut");
+    var tab = window.open("about:blank", "_blank");
+    if (!tab) { out.textContent = "Pop-up blocked. Allow pop-ups for this page and try again."; out.classList.add("show"); return; }
+
+    var facts = [];
+    function fact(label, fn) {
+      var val;
+      try { val = fn(); } catch (e) { val = "(error: " + e.message + ")"; }
+      facts.push([label, String(val)]);
+    }
+    fact("Address of the new tab", function () { return tab.location.href; });
+    fact("Which site it belongs to (its origin)", function () { return tab.origin; });
+    fact("Which site THIS page belongs to", function () { return window.origin; });
+    fact("Same owner, so we can write into it?", function () { return tab.origin === window.origin ? "yes" : "no"; });
+    fact("Does it know who opened it? (window.opener)", function () { return tab.opener === window ? "yes, this page" : "no"; });
+    fact("Pages in its back/forward history", function () { return tab.history.length; });
+    fact("Anything in it yet? (text length)", function () { return tab.document.body ? tab.document.body.innerText.length : 0; });
+
+    var text = facts.map(function (f) { return f[0] + ":\n  " + f[1]; }).join("\n\n");
+    out.textContent = text + "\n\nNow look at the new tab: this page just wrote the same report into it, which only works because the tab belongs to this page.";
+    out.classList.add("show");
+
+    try {
+      var d = tab.document;
+      d.title = "Inside about:blank";
+      var rows = facts.map(function (f) {
+        return '<tr><td style="padding:6px 10px;color:#666">' + escapeHtml(f[0]) + '</td><td style="padding:6px 10px"><code>' + escapeHtml(f[1]) + '</code></td></tr>';
+      }).join("");
+      d.body.innerHTML =
+        '<div style="font:15px/1.5 system-ui,sans-serif;max-width:680px;margin:40px auto;padding:0 16px">' +
+        '<h1 style="font-size:22px">This text was written by the page that opened me</h1>' +
+        '<p>My address bar says <code>about:blank</code>, but I belong to <code>' + escapeHtml(window.origin) + '</code>, so that page could fill me in.</p>' +
+        '<table style="border-collapse:collapse">' + rows + '</table>' +
+        '<p style="color:#666">Try reloading this tab: it will go completely empty, because there is nothing at about:blank to reload.</p></div>';
+    } catch (e) { /* the report above still shows on the main page */ }
+  });
+
+  renderRecent();
+})();
+</script>
+</body>
+</html>
