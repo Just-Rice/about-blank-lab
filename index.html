@@ -233,14 +233,29 @@
       <button class="primary" type="submit">Launch</button>
     </form>
 
-    <div class="presets" aria-label="Sample sites">
-      <span class="muted small">Try:</span>
+    <div class="presets" aria-label="Your GitHub Pages sites">
+      <span class="muted small">Your sites:</span>
+      <button class="chip" type="button" data-url="https://just-rice.github.io/megabonk/"><span class="dot ok"></span>MEGABONK</button>
+      <button class="chip" type="button" data-url="https://just-rice.github.io/test-prep/"><span class="dot ok"></span>Test Prep</button>
+      <button class="chip" type="button" data-url="https://just-rice.github.io/gamehub/"><span class="dot ok"></span>GameHub</button>
+      <button class="chip" type="button" data-url="https://just-rice.github.io/subtrackr/"><span class="dot ok"></span>Subtrackr</button>
+      <button class="chip" type="button" data-url="https://just-rice.github.io/food-is-medicine/"><span class="dot ok"></span>Food is Medicine</button>
+    </div>
+    <div class="presets" aria-label="Chess sites">
+      <span class="muted small">Chess:</span>
+      <button class="chip" type="button" data-url="https://www.chess.com/play/computer"><span class="dot no"></span>chess.com</button>
+      <button class="chip" type="button" data-url="https://lichess.org"><span class="dot no"></span>lichess.org</button>
+      <button class="chip" type="button" data-url="https://lichess.org/training/frame"><span class="dot ok"></span>lichess daily puzzle</button>
+      <button class="chip" type="button" data-url="https://lichess.org/tv/frame"><span class="dot ok"></span>lichess TV</button>
+    </div>
+    <div class="presets" aria-label="Other sample sites">
+      <span class="muted small">Other:</span>
       <button class="chip" type="button" data-url="https://example.com"><span class="dot ok"></span>example.com</button>
       <button class="chip" type="button" data-url="https://en.wikipedia.org/wiki/About_URI_scheme"><span class="dot ok"></span>Wikipedia</button>
       <button class="chip" type="button" data-url="https://www.google.com"><span class="dot no"></span>google.com</button>
       <button class="chip" type="button" data-url="https://github.com"><span class="dot no"></span>github.com</button>
     </div>
-    <p class="muted small" style="margin:6px 0 0">Green sites let other pages show them inside a frame. Red ones refuse, so you can see what a refusal looks like.</p>
+    <p class="muted small" style="margin:6px 0 0">Green sites let other pages show them inside a frame. Red ones refuse, so you can see what a refusal looks like. <a href="#will-it-work">Which sites work, and why</a></p>
 
     <fieldset style="border:0;padding:0;margin:0">
       <legend class="sr-only" style="position:absolute;left:-9999px">How to open it</legend>
@@ -263,6 +278,7 @@
     <div class="options">
       <label>Tab title <input type="text" id="tabTitle" placeholder="(leave empty for none)"></label>
       <label><input type="checkbox" id="helperBar" checked> Show a small helper bar in the new tab</label>
+      <label title="Stops the site from replacing the whole tab with its real address"><input type="checkbox" id="noEscape"> Don't let the site take over the tab</label>
     </div>
 
     <div class="status" id="status" role="status" aria-live="polite"></div>
@@ -365,16 +381,74 @@ tab.document.body.appendChild(frame);</pre>
     read another website's replies. The helper bar in the new tab has an <b>Open normally</b> button for exactly this case.
   </p>
 
+  <h2 id="will-it-work">Which sites work?</h2>
+  <p>
+    It all comes down to one question: <b>does the site let other pages show it in a frame?</b> Each site decides that for itself,
+    and nothing on this page can change the answer. Here is what I found when I checked these sites' actual replies.
+  </p>
+  <div class="card table-scroll">
+    <table>
+      <thead><tr><th>Site</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Your GitHub Pages sites (MEGABONK, Test Prep, GameHub and the rest)</td><td><span class="yes">Work fully.</span> GitHub Pages never refuses framing. Better still, every site at <code>just-rice.github.io</code>, including this lab, has the same owner, so a site launched from here is treated like it's in a normal tab: same saved progress, same settings, same sign-in.</td></tr>
+        <tr><td>Other people's GitHub Pages sites (<code>someone.github.io</code>)</td><td><span class="yes">Load fine</span>, with <span class="meh">separate saves</span>: see "saved data" below. A few add their own code that jumps out of frames; the "Don't let the site take over the tab" box stops that.</td></tr>
+        <tr><td>chess.com</td><td><span class="no">Refuses.</span> Every chess.com page sends <code>X-Frame-Options: SAMEORIGIN</code> and <code>frame-ancestors 'self'</code>, which both mean "only chess.com itself may frame me". You'll get a "refused to connect" screen. See below for why this can't be worked around.</td></tr>
+        <tr><td>lichess.org (main site)</td><td><span class="no">Refuses</span> (<code>X-Frame-Options: DENY</code>).</td></tr>
+        <tr><td>lichess.org frame pages</td><td><span class="yes">Work.</span> Lichess publishes special pages made for framing: the daily puzzle (<code>lichess.org/training/frame</code>) and live top-rated games (<code>lichess.org/tv/frame</code>).</td></tr>
+        <tr><td>Google, GitHub, Bing, banks, email, social media</td><td><span class="no">Refuse.</span> Almost every site with accounts does.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>What still works inside the frame</h3>
+  <div class="card table-scroll">
+    <table>
+      <thead><tr><th>Feature</th><th>Inside the about:blank tab</th></tr></thead>
+      <tbody>
+        <tr><td>3D graphics, animation, canvas games</td><td><span class="yes">Work</span> exactly as normal.</td></tr>
+        <tr><td>Keyboard controls</td><td><span class="yes">Work</span> after you click once inside the site, so the frame has the keyboard's attention.</td></tr>
+        <tr><td>Sound and video</td><td><span class="yes">Work.</span> As in any tab, sound usually starts only after your first click.</td></tr>
+        <tr><td>Fullscreen and game controllers</td><td><span class="yes">Work</span>, because the launcher grants the frame those permissions.</td></tr>
+        <tr><td>Mouse capture (games that hide and lock the cursor)</td><td><span class="yes">Works.</span></td></tr>
+        <tr><td>Saved data (progress, settings)</td><td><span class="yes">Your own sites: shared with a normal tab.</span> <span class="meh">Other sites: kept in a separate box.</span> Browsers file a framed site's saved data under the page around it, so another site's saves made here stay here, and its normal-tab saves don't show up here.</td></tr>
+        <tr><td>Logging in</td><td><span class="yes">Your own sites: works.</span> <span class="no">Other sites: usually fails</span>, because browsers block login cookies for sites inside someone else's frame.</td></tr>
+        <tr><td>Links that open a new tab</td><td><span class="meh">Open a normal tab</span> with the real address showing.</td></tr>
+        <tr><td>Reloading</td><td><span class="no">Empties the tab.</span> Reload inside the site instead, or launch again.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Why chess.com can't be made to work</h3>
+  <p>
+    The refusal is enforced by <b>your browser</b>, following chess.com's instructions. The browser gets those instructions straight from chess.com,
+    so no code on this page can switch them off.
+  </p>
+  <p>
+    The only way around it is a <b>proxy</b>: a server of your own that fetches chess.com's pages, deletes the "don't frame me" instruction,
+    and passes the rest on. That isn't possible here, and wouldn't work well anyway:
+  </p>
+  <ul>
+    <li>GitHub Pages only hands out files. It can't run a server, so a proxy would need paid or separate hosting.</li>
+    <li>chess.com's live play runs on constant two-way connections, logins and bot checks that a simple proxy breaks. You'd mostly get a broken or blocked page.</li>
+    <li>Passing someone else's site through your own server goes against most sites' terms of use, chess.com's included.</li>
+  </ul>
+  <p>
+    If you want chess inside the launcher, the lichess frame pages above are the supported way. Lichess can also produce frame-ready pages for
+    individual games and studies from its "Share &amp; export" menus.
+  </p>
+
+  <h3>"Don't let the site take over the tab"</h3>
+  <p>
+    Some sites run a little code that checks "am I inside a frame?" and, if so, replaces the whole tab with their real address, which undoes the trick.
+    Ticking this box puts the frame in a <b>sandbox</b>, a set of rules that allows everything a normal site needs except that one move. It's off by default
+    because a few sites misbehave inside a sandbox. It doesn't help with sites that refuse framing outright, like chess.com; that refusal happens before the site's code even runs.
+  </p>
+
   <h2>Other quirks you'll notice</h2>
   <h3>Reloading wipes it</h3>
   <p>
     Press reload in the blank tab and it goes completely empty. There's nothing to reload: the address really is just <code>about:blank</code>,
     and everything you saw was written in by this page, which doesn't happen a second time.
-  </p>
-  <h3>You may look logged out</h3>
-  <p>
-    Many sites keep you logged in with <b>cookies</b> (small notes the site stores in your browser). Browsers now limit cookies for sites shown inside
-    another site's frame, as a privacy protection against tracking. So a site you're logged into normally may treat you as a stranger inside the frame.
   </p>
   <h3>It needs a real click</h3>
   <p>
@@ -450,8 +524,14 @@ tab.document.body.appendChild(frame);</pre>
     });
   }
 
+  // Browser features the framed site may use. Frames get none of these unless the outer page lists them.
+  var FRAME_ALLOW = "fullscreen; autoplay; gamepad; clipboard-read; clipboard-write; picture-in-picture; screen-wake-lock; web-share";
+  // A sandbox that allows everything a normal site needs except navigating the whole tab away.
+  var NO_ESCAPE_SANDBOX = "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox " +
+    "allow-modals allow-downloads allow-pointer-lock allow-presentation allow-orientation-lock";
+
   // The HTML that goes inside the blank tab: a full-size frame plus an optional helper bar.
-  function wrapperHtml(url, title, showBar) {
+  function wrapperHtml(url, title, showBar, noEscape) {
     var safeUrl = escapeHtml(url);
     var bar = showBar ?
       '<div id="abl-bar" style="position:fixed;top:8px;right:8px;z-index:2;display:flex;gap:6px;align-items:center;' +
@@ -467,8 +547,8 @@ tab.document.body.appendChild(frame);</pre>
       '<title>' + escapeHtml(title) + '</title>' +
       '<style>html,body{margin:0;height:100%;overflow:hidden;background:#fff}' +
       'iframe{position:fixed;inset:0;width:100%;height:100%;border:0}</style></head><body>' +
-      '<iframe src="' + safeUrl + '" allow="fullscreen; autoplay; clipboard-write; picture-in-picture" ' +
-        'referrerpolicy="no-referrer"></iframe>' + bar +
+      '<iframe src="' + safeUrl + '" allow="' + FRAME_ALLOW + '" allowfullscreen' +
+        (noEscape ? ' sandbox="' + NO_ESCAPE_SANDBOX + '"' : '') + '></iframe>' + bar +
       '</body></html>';
   }
 
@@ -515,6 +595,7 @@ tab.document.body.appendChild(frame);</pre>
     var mode = currentMode();
     var title = $("tabTitle").value;
     var showBar = $("helperBar").checked;
+    var noEscape = $("noEscape").checked;
 
     if (mode === "normal") {
       // noopener: the new tab gets no link back to this page, which is the safe default.
@@ -525,7 +606,7 @@ tab.document.body.appendChild(frame);</pre>
     }
 
     if (mode === "blob") {
-      var blob = new Blob([wrapperHtml(url, title, showBar)], { type: "text/html" });
+      var blob = new Blob([wrapperHtml(url, title, showBar, noEscape)], { type: "text/html" });
       var blobUrl = URL.createObjectURL(blob);
       var bt = window.open(blobUrl, "_blank");
       if (!bt) { URL.revokeObjectURL(blobUrl); popupBlocked(); return; }
@@ -539,7 +620,7 @@ tab.document.body.appendChild(frame);</pre>
     if (!tab) { popupBlocked(); return; }
     try {
       tab.document.open();
-      tab.document.write(wrapperHtml(url, title, showBar));
+      tab.document.write(wrapperHtml(url, title, showBar, noEscape));
       tab.document.close();
     } catch (e) {
       setStatus("The tab opened, but this page couldn't write into it (" + e.message + ").", "bad");
