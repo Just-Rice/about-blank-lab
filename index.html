@@ -384,7 +384,7 @@ tab.document.body.appendChild(frame);</pre>
   <h2 id="will-it-work">Which sites work?</h2>
   <p>
     It all comes down to one question: <b>does the site let other pages show it in a frame?</b> Each site decides that for itself,
-    and nothing on this page can change the answer. Here is what I found when I checked these sites' actual replies.
+    and nothing on this page can change the answer. Here is what I found by checking these sites' actual replies and loading each one in Chrome on 25 September 2026.
   </p>
   <div class="card table-scroll">
     <table>
@@ -413,6 +413,7 @@ tab.document.body.appendChild(frame);</pre>
         <tr><td>Saved data (progress, settings)</td><td><span class="yes">Your own sites: shared with a normal tab.</span> <span class="meh">Other sites: kept in a separate box.</span> Browsers file a framed site's saved data under the page around it, so another site's saves made here stay here, and its normal-tab saves don't show up here.</td></tr>
         <tr><td>Logging in</td><td><span class="yes">Your own sites: works.</span> <span class="no">Other sites: usually fails</span>, because browsers block login cookies for sites inside someone else's frame.</td></tr>
         <tr><td>Links that open a new tab</td><td><span class="meh">Open a normal tab</span> with the real address showing.</td></tr>
+        <tr><td>Tab title</td><td><span class="meh">Your own sites may change it.</span> Because they share an owner with the blank tab, they're allowed to reach out and rename it. Test Prep does this on purpose, replacing whatever you typed in "Tab title" with its own page name. Other sites can't touch it.</td></tr>
         <tr><td>Reloading</td><td><span class="no">Empties the tab.</span> Reload inside the site instead, or launch again.</td></tr>
       </tbody>
     </table>
