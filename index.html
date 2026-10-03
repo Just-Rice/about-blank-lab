@@ -16,9 +16,9 @@
     --border: #dcdfea;
     --accent: #4f5fe8;
     --accent-ink: #ffffff;
-    --good: #1c8a4c;
+    --good: #17793f;
     --bad: #c23a3a;
-    --warn: #a86a00;
+    --warn: #8f5a00;
     --code-bg: #eef0f7;
     --shadow: 0 1px 2px rgba(20, 24, 40, .06), 0 4px 16px rgba(20, 24, 40, .06);
   }
@@ -101,7 +101,12 @@
     border-radius: 10px;
     padding: 10px 12px;
   }
-  input:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  input:focus-visible, button:focus-visible, select:focus-visible,
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
   button {
     font: inherit;
     border-radius: 10px;
@@ -214,6 +219,15 @@
 
   .theme-toggle { position: fixed; top: 12px; right: 12px; padding: 6px 10px; font-size: .85rem; }
   footer { margin-top: 56px; color: var(--muted); font-size: .85rem; }
+
+  /* Touch screens: give small controls a finger-sized (44px) hit area. Mouse layouts are unchanged. */
+  @media (pointer: coarse) {
+    .chip, .theme-toggle, #clearRecent, .recent li button { min-height: 44px; }
+    .recent li button.x { min-width: 44px; }
+    .options label, .options input[type="text"] { min-height: 44px; }
+    .options input[type="checkbox"] { width: 20px; height: 20px; }
+    details summary { padding: 10px 0; }
+  }
 </style>
 </head>
 <body>
@@ -235,30 +249,30 @@
 
     <div class="presets" aria-label="Your GitHub Pages sites">
       <span class="muted small">Your sites:</span>
-      <button class="chip" type="button" data-url="https://just-rice.github.io/megabonk/"><span class="dot ok"></span>MEGABONK</button>
-      <button class="chip" type="button" data-url="https://just-rice.github.io/test-prep/"><span class="dot ok"></span>Test Prep</button>
-      <button class="chip" type="button" data-url="https://just-rice.github.io/gamehub/"><span class="dot ok"></span>GameHub</button>
-      <button class="chip" type="button" data-url="https://just-rice.github.io/subtrackr/"><span class="dot ok"></span>Subtrackr</button>
-      <button class="chip" type="button" data-url="https://just-rice.github.io/food-is-medicine/"><span class="dot ok"></span>Food is Medicine</button>
+      <button class="chip" type="button" data-url="https://just-rice.github.io/megabonk/"><span class="dot ok" aria-hidden="true"></span>MEGABONK<span class="sr-only"> (allows framing)</span></button>
+      <button class="chip" type="button" data-url="https://just-rice.github.io/test-prep/"><span class="dot ok" aria-hidden="true"></span>Test Prep<span class="sr-only"> (allows framing)</span></button>
+      <button class="chip" type="button" data-url="https://just-rice.github.io/gamehub/"><span class="dot ok" aria-hidden="true"></span>GameHub<span class="sr-only"> (allows framing)</span></button>
+      <button class="chip" type="button" data-url="https://just-rice.github.io/subtrackr/"><span class="dot ok" aria-hidden="true"></span>Subtrackr<span class="sr-only"> (allows framing)</span></button>
+      <button class="chip" type="button" data-url="https://just-rice.github.io/food-is-medicine/"><span class="dot ok" aria-hidden="true"></span>Food is Medicine<span class="sr-only"> (allows framing)</span></button>
     </div>
     <div class="presets" aria-label="Chess sites">
       <span class="muted small">Chess:</span>
-      <button class="chip" type="button" data-url="https://www.chess.com/play/computer"><span class="dot no"></span>chess.com</button>
-      <button class="chip" type="button" data-url="https://lichess.org"><span class="dot no"></span>lichess.org</button>
-      <button class="chip" type="button" data-url="https://lichess.org/training/frame"><span class="dot ok"></span>lichess daily puzzle</button>
-      <button class="chip" type="button" data-url="https://lichess.org/tv/frame"><span class="dot ok"></span>lichess TV</button>
+      <button class="chip" type="button" data-url="https://www.chess.com/play/computer"><span class="dot no" aria-hidden="true"></span>chess.com<span class="sr-only"> (refuses framing)</span></button>
+      <button class="chip" type="button" data-url="https://lichess.org"><span class="dot no" aria-hidden="true"></span>lichess.org<span class="sr-only"> (refuses framing)</span></button>
+      <button class="chip" type="button" data-url="https://lichess.org/training/frame"><span class="dot ok" aria-hidden="true"></span>lichess daily puzzle<span class="sr-only"> (allows framing)</span></button>
+      <button class="chip" type="button" data-url="https://lichess.org/tv/frame"><span class="dot ok" aria-hidden="true"></span>lichess TV<span class="sr-only"> (allows framing)</span></button>
     </div>
     <div class="presets" aria-label="Other sample sites">
       <span class="muted small">Other:</span>
-      <button class="chip" type="button" data-url="https://example.com"><span class="dot ok"></span>example.com</button>
-      <button class="chip" type="button" data-url="https://en.wikipedia.org/wiki/About_URI_scheme"><span class="dot ok"></span>Wikipedia</button>
-      <button class="chip" type="button" data-url="https://www.google.com"><span class="dot no"></span>google.com</button>
-      <button class="chip" type="button" data-url="https://github.com"><span class="dot no"></span>github.com</button>
+      <button class="chip" type="button" data-url="https://example.com"><span class="dot ok" aria-hidden="true"></span>example.com<span class="sr-only"> (allows framing)</span></button>
+      <button class="chip" type="button" data-url="https://en.wikipedia.org/wiki/About_URI_scheme"><span class="dot ok" aria-hidden="true"></span>Wikipedia<span class="sr-only"> (allows framing)</span></button>
+      <button class="chip" type="button" data-url="https://www.google.com"><span class="dot no" aria-hidden="true"></span>google.com<span class="sr-only"> (refuses framing)</span></button>
+      <button class="chip" type="button" data-url="https://github.com"><span class="dot no" aria-hidden="true"></span>github.com<span class="sr-only"> (refuses framing)</span></button>
     </div>
     <p class="muted small" style="margin:6px 0 0">Green sites let other pages show them inside a frame. Red ones refuse, so you can see what a refusal looks like. <a href="#will-it-work">Which sites work, and why</a></p>
 
     <fieldset style="border:0;padding:0;margin:0">
-      <legend class="sr-only" style="position:absolute;left:-9999px">How to open it</legend>
+      <legend class="sr-only">How to open it</legend>
       <div class="modes">
         <label class="mode">
           <input type="radio" name="mode" value="blank" checked><b>about:blank + frame</b>
@@ -317,7 +331,7 @@
   </ol>
   <p>The address bar only ever describes the outer page, not frames inside it, so it keeps showing <code>about:blank</code> while you use the real site.</p>
 
-  <div class="diagram" aria-label="Diagram: this page opens a blank tab, which holds a frame showing the real site">
+  <div class="diagram" role="group" aria-label="Diagram: this page opens a blank tab, which holds a frame showing the real site">
     <div class="box">
       <div class="bar">just-rice.github.io/about-blank-lab</div>
       <b>This page</b><br><span class="muted">You click Launch. It opens a tab and writes into it.</span>

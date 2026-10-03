@@ -13,3 +13,7 @@ A small, single-page explainer for how `about:blank` tabs work, with a launcher 
 - An "inspect a blank tab" experiment that reads facts about a fresh about:blank tab from its opener.
 
 Everything runs in the browser: one `index.html`, no build step, no server, no tracking.
+
+## Checking it
+
+`node tests/console-errors.js` loads the page at a phone (390×844) and a desktop viewport and fails on any console error or sideways scrolling. It needs [Playwright](https://playwright.dev) with Chromium installed.
