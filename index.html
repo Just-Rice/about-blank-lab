@@ -14,6 +14,7 @@
     --text: #1b1e2b;
     --muted: #5d6275;
     --border: #dcdfea;
+    --input-border: #858b9f;
     --accent: #4f5fe8;
     --accent-ink: #ffffff;
     --good: #17793f;
@@ -30,6 +31,7 @@
       --text: #e7e9f2;
       --muted: #9aa0b6;
       --border: #2e3345;
+      --input-border: #686f88;
       --accent: #8391ff;
       --accent-ink: #0e1020;
       --good: #53c98a;
@@ -46,6 +48,7 @@
     --text: #e7e9f2;
     --muted: #9aa0b6;
     --border: #2e3345;
+    --input-border: #686f88;
     --accent: #8391ff;
     --accent-ink: #0e1020;
     --good: #53c98a;
@@ -97,7 +100,7 @@
     font: inherit;
     color: var(--text);
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: 1px solid var(--input-border);
     border-radius: 10px;
     padding: 10px 12px;
   }
@@ -124,9 +127,11 @@
     padding: 4px 10px;
     border-radius: 999px;
   }
-  .chip .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
-  .dot.ok { background: var(--good); }
-  .dot.no { background: var(--bad); }
+  .chip .dot { display: inline-block; margin-right: 5px; font-weight: 700; }
+  .dot.ok { color: var(--good); }
+  .dot.no { color: var(--bad); }
+  .dot.ok::before { content: "\2713"; }
+  .dot.no::before { content: "\2715"; }
 
   .modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-top: 18px; }
   .mode {
@@ -172,7 +177,7 @@
     font-size: .9rem;
   }
   .box .bar {
-    font: .8rem ui-monospace, Menlo, monospace;
+    font: .875rem ui-monospace, Menlo, monospace;
     background: var(--surface-2);
     border-radius: 6px;
     padding: 4px 8px;
@@ -218,6 +223,12 @@
   }
 
   .theme-toggle { position: fixed; top: 12px; right: 12px; padding: 6px 10px; font-size: .85rem; }
+  /* Phones: scroll away with the header instead of floating over the text. */
+  @media (max-width: 620px) {
+    .theme-toggle { position: absolute; }
+  }
+  /* Narrow phones: keep the title clear of the theme button. */
+  @media (max-width: 379px) { header h1 { padding-right: 96px; } }
   footer { margin-top: 56px; color: var(--muted); font-size: .85rem; }
 
   /* Touch screens: give small controls a finger-sized (44px) hit area. Mouse layouts are unchanged. */
@@ -269,7 +280,7 @@
       <button class="chip" type="button" data-url="https://www.google.com"><span class="dot no" aria-hidden="true"></span>google.com<span class="sr-only"> (refuses framing)</span></button>
       <button class="chip" type="button" data-url="https://github.com"><span class="dot no" aria-hidden="true"></span>github.com<span class="sr-only"> (refuses framing)</span></button>
     </div>
-    <p class="muted small" style="margin:6px 0 0">Green sites let other pages show them inside a frame. Red ones refuse, so you can see what a refusal looks like. <a href="#will-it-work">Which sites work, and why</a></p>
+    <p class="muted small" style="margin:6px 0 0">Sites marked ✓ let other pages show them inside a frame. Ones marked ✕ refuse, so you can see what a refusal looks like. <a href="#will-it-work">Which sites work, and why</a></p>
 
     <fieldset style="border:0;padding:0;margin:0">
       <legend class="sr-only">How to open it</legend>
@@ -381,7 +392,7 @@ tab.document.body.appendChild(frame);</pre>
 
   <h2>Why some sites stay blank</h2>
   <p>
-    Try the red <b>google.com</b> or <b>github.com</b> buttons. The tab opens but the frame shows an error like "refused to connect", or just stays empty.
+    Try the ✕ <b>google.com</b> or <b>github.com</b> buttons. The tab opens but the frame shows an error like "refused to connect", or just stays empty.
     That's on purpose: those sites send a short note with every page saying <b>"don't show me inside anyone else's frame."</b>
     The note is called <code>X-Frame-Options</code> (or, in its newer form, <code>frame-ancestors</code>), and the browser obeys it.
   </p>
@@ -550,12 +561,12 @@ tab.document.body.appendChild(frame);</pre>
     var safeUrl = escapeHtml(url);
     var bar = showBar ?
       '<div id="abl-bar" style="position:fixed;top:8px;right:8px;z-index:2;display:flex;gap:6px;align-items:center;' +
-        'font:12px/1.2 system-ui,sans-serif;background:rgba(20,22,32,.88);color:#fff;padding:6px 8px;border-radius:8px;' +
+        'font:14px/1.2 system-ui,sans-serif;background:rgba(20,22,32,.88);color:#fff;padding:0 0 0 10px;border-radius:8px;' +
         'box-shadow:0 2px 10px rgba(0,0,0,.25);max-width:calc(100vw - 16px)">' +
         '<span style="opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40vw" title="' + safeUrl + '">' + safeUrl + '</span>' +
         '<a href="' + safeUrl + '" target="_blank" rel="noopener" style="color:#9fb0ff;white-space:nowrap">Open normally</a>' +
         '<button type="button" onclick="document.getElementById(\'abl-bar\').remove()" ' +
-          'style="all:unset;cursor:pointer;padding:0 4px;opacity:.8" aria-label="Hide this bar">✕</button>' +
+          'style="all:unset;cursor:pointer;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;opacity:.8" aria-label="Hide this bar">✕</button>' +
       '</div>' : "";
     return '<!DOCTYPE html><html><head><meta charset="utf-8">' +
       '<meta name="viewport" content="width=device-width,initial-scale=1">' +
@@ -692,8 +703,12 @@ tab.document.body.appendChild(frame);</pre>
     try {
       var d = tab.document;
       d.title = "Inside about:blank";
+      // Without this, phones lay the report out at desktop width and it runs off the screen.
+      var vp = d.createElement("meta");
+      vp.name = "viewport"; vp.content = "width=device-width,initial-scale=1";
+      d.head.appendChild(vp);
       var rows = facts.map(function (f) {
-        return '<tr><td style="padding:6px 10px;color:#666">' + escapeHtml(f[0]) + '</td><td style="padding:6px 10px"><code>' + escapeHtml(f[1]) + '</code></td></tr>';
+        return '<tr><td style="padding:6px 10px;color:#666">' + escapeHtml(f[0]) + '</td><td style="padding:6px 10px;overflow-wrap:anywhere"><code>' + escapeHtml(f[1]) + '</code></td></tr>';
       }).join("");
       d.body.innerHTML =
         '<div style="font:15px/1.5 system-ui,sans-serif;max-width:680px;margin:40px auto;padding:0 16px">' +
