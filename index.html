@@ -511,10 +511,14 @@ tab.document.body.appendChild(frame);</pre>
   function normalizeUrl(raw) {
     raw = (raw || "").trim();
     if (!raw) return null;
-    if (!/^[a-z][a-z0-9+.\-]*:/i.test(raw)) raw = "https://" + raw;
+    // Only "scheme://" counts as already having a scheme: in "localhost:8000" or
+    // "example.com:8080/page" the colon starts a port, not a scheme.
+    if (!/^[a-z][a-z0-9+.\-]*:\/\//i.test(raw)) raw = "https://" + raw;
     var u;
     try { u = new URL(raw); } catch (e) { return null; }
     if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    // "mailto:someone@example.com" would otherwise read as a sign-in name for example.com.
+    if (u.username || u.password) return null;
     if (!u.hostname || u.hostname.indexOf(".") === -1 && u.hostname !== "localhost") return null;
     return u.href;
   }
